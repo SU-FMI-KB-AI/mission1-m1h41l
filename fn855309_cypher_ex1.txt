@@ -1,0 +1,75 @@
+CREATE (mihail:Person {name:"Mihail"}) 
+RETURN Mihail
+
+MATCH (mihail:Person {name:"Mihail"})
+CREATE (mihail)-[like:LIKE]->(neo:Database {name:"Neo4j"})
+RETURN mihail,like,neo
+
+MATCH (mihail:Person {name:"Mihail"}) 
+FOREACH (name in ["Trajce","Antonio","Iliyan","Teodor","Andrew"] | 
+  CREATE (mihail)-[:FRIEND]->(:Person {name:name}))
+
+MATCH (ee:Person)-[:KNOWS]-(friends)
+WHERE ee.name = "Mihail"
+RETURN ee, friends
+
+MATCH p=()-[n]-()
+WHERE id(n) = 2
+RETURN p
+
+MATCH (n)
+WHERE n.name = "Mihail"
+SET n.owns = "Smartphone"
+
+// will delete all other properties!!
+MATCH (n)
+WHERE n.name = "Mihail"
+SET n = {plays: "Piano", age: 23}
+//use n += {....} to be added only
+
+MATCH (n)
+WHERE n.name = "Mihail" AND NOT (EXISTS (n.owns))
+SET n.owns = "Smartphone"
+
+MATCH (mihail {name:"Mihail"})-[:FRIEND]->(yourFriends)
+RETURN mihail, yourFriends
+
+MATCH (neo:Database {name:"Neo4j"})
+MATCH (trajce:Person {name:"Trajce"})
+CREATE (trajce)-[:FRIEND]->(:Person:Expert {name:"Amanda"})-[:WORKED_WITH]->(neo)
+
+MATCH (n) RETURN n LIMIT 25
+
+MATCH (mihail {name:"Mihail"})
+MATCH (expert)-[:WORKED_WITH]->(db:Database {name:"Neo4j"})
+MATCH path = shortestPath( (mihail)-[:FRIEND*..5]-(expert) )
+RETURN db,expert,path
+
+MATCH (n)
+REMOVE n:Person
+
+MATCH (n)-[r]-()
+WHERE id(n) = 5
+DELETE r, n
+
+
+
+MATCH (people:Person) RETURN people.name LIMIT 10
+MATCH (n) RETURN n 
+MATCH p=()-->() RETURN p LIMIT 100
+
+
+MATCH (tom:Person {name:"Tom Hanks"})-[:ACTED_IN]->(m)<-[:ACTED_IN]-(coActors),
+      (coActors)-[:ACTED_IN]->(m2)<-[:ACTED_IN]-(cocoActors)
+WHERE NOT (tom)-[:ACTED_IN]->()<-[:ACTED_IN]-(cocoActors) AND tom <> cocoActors
+RETURN cocoActors.name AS Recommended, count(*) AS Strength ORDER BY Strength DESC
+
+//drop only id ==5 and it's relations
+MATCH (n) 
+WHERE id(n) = 5 
+DETACH DELETE n
+
+MATCH (n)
+OPTIONAL MATCH (n)-[r]-()
+DELETE n, r
+
